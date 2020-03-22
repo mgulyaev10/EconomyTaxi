@@ -7,6 +7,8 @@ import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.fragment.app.Fragment
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.google.android.gms.maps.*
 
 class MapsFragment: Fragment(), MapsContract.View<MapsContract.Presenter> {
@@ -15,6 +17,7 @@ class MapsFragment: Fragment(), MapsContract.View<MapsContract.Presenter> {
     private var mapView: MapView? = null
 
     private var addressView: TextView? = null
+    private var recents: RecyclerView? = null
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         val view = inflater.inflate(R.layout.maps_fragment, container, false)
@@ -97,6 +100,11 @@ class MapsFragment: Fragment(), MapsContract.View<MapsContract.Presenter> {
             }
 
             addressView = view.findViewById(R.id.address)
+
+            recents = view.findViewById<RecyclerView>(R.id.recents)?.apply {
+                layoutManager = LinearLayoutManager(context, LinearLayoutManager.HORIZONTAL, false)
+                adapter = RecentPlacesAdapter(context)
+            }
         }
     }
 

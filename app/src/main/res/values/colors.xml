@@ -6,5 +6,6 @@
     <color name="gray_zoom_btn_bg">#dbdbdb</color>
     <color name="street_address">#a6a6a6</color>
     <color name="black">#000000</color>
+    <color name="white">#FFFFFF</color>
     <color name="transparent">#00FFFFFF</color>
 </resources>

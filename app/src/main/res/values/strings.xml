@@ -1,7 +1,9 @@
 <resources>
     <string name="app_name">Economy Taxi</string>
     <string name="title_activity_maps">Economy Taxi</string>
-    
+
+    <string name="where">Куда?</string>
+
     <!--  ACCESSIBILITY  -->
     <string name="accessibilty_zoom_in">Приблизить</string>
     <string name="accessibilty_zoom_out">Отдалить</string>
