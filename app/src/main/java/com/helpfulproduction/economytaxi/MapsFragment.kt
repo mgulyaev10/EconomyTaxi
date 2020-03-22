@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.animation.Animation
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.fragment.app.Fragment
@@ -16,8 +17,11 @@ class MapsFragment: Fragment(), MapsContract.View<MapsContract.Presenter> {
     private val presenter = MapsPresenter(this)
     private var mapView: MapView? = null
 
-    private var addressView: TextView? = null
     private var recents: RecyclerView? = null
+    private lateinit var addressView: TextView
+    private var addressAnimation: Animation? = null
+
+    private lateinit var marker: ImageView
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         val view = inflater.inflate(R.layout.maps_fragment, container, false)
@@ -31,16 +35,18 @@ class MapsFragment: Fragment(), MapsContract.View<MapsContract.Presenter> {
     }
 
     override fun onCameraMoveStarted() {
-        addressView?.setGone()
+        addressView.setGone()
+        addressAnimation?.cancel()
+        addressAnimation = null
     }
 
     override fun onUnknownAddress() {
-        addressView?.setGone()
+        addressView.setGone()
     }
 
     override fun onAddressResolved(address: String) {
-        addressView?.text = address
-        addressView?.setVisible()
+        addressView.text = address
+        showAddressViewAnimated()
     }
 
     override fun fragment() = this
@@ -100,12 +106,17 @@ class MapsFragment: Fragment(), MapsContract.View<MapsContract.Presenter> {
             }
 
             addressView = view.findViewById(R.id.address)
+            marker = view.findViewById(R.id.marker)
 
             recents = view.findViewById<RecyclerView>(R.id.recents)?.apply {
                 layoutManager = LinearLayoutManager(context, LinearLayoutManager.HORIZONTAL, false)
                 adapter = RecentPlacesAdapter(context)
             }
         }
+    }
+
+    private fun showAddressViewAnimated() {
+        addressAnimation = AnimationHelper.showOneViewFromAnotherVertically(addressView, marker, -100F, 300L)
     }
 
 }

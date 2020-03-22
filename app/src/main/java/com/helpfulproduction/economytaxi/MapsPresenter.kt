@@ -76,6 +76,9 @@ class MapsPresenter(
             val geocoder = Geocoder(view.activity(), Locale.getDefault())
             val location = map?.cameraPosition?.target ?: LocationHelper.getDefaultLocation()
             val addresses = geocoder.getFromLocation(location.latitude, location.longitude, 1)
+            if (addresses.size < 0) {
+                return
+            }
             val address = addresses[0]
             val thoroughfare = address.thoroughfare
             if (thoroughfare == null || thoroughfare == UNNAMED_ROAD) {
@@ -85,12 +88,11 @@ class MapsPresenter(
                 if (subThoroughfare == null) {
                     view.onAddressResolved(thoroughfare)
                 } else {
-                    view.onAddressResolved("${thoroughfare}, ${address.subThoroughfare}")
+                    view.onAddressResolved("$thoroughfare, $subThoroughfare")
                 }
             }
         } catch (e: Exception) {
             view.onUnknownAddress()
-            tryResolveAgain()
         }
     }
 
