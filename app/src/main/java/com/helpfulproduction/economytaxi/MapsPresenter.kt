@@ -77,14 +77,25 @@ class MapsPresenter(
             val location = map?.cameraPosition?.target ?: LocationHelper.getDefaultLocation()
             val addresses = geocoder.getFromLocation(location.latitude, location.longitude, 1)
             val address = addresses[0]
-            view.onAddressResolved("${address.thoroughfare}, ${address.subThoroughfare}")
+            val thoroughfare = address.thoroughfare
+            if (thoroughfare == null || thoroughfare == UNNAMED_ROAD) {
+                view.onUnknownAddress()
+            } else {
+                val subThoroughfare = address.subThoroughfare
+                if (subThoroughfare == null) {
+                    view.onAddressResolved(thoroughfare)
+                } else {
+                    view.onAddressResolved("${thoroughfare}, ${address.subThoroughfare}")
+                }
+            }
         } catch (e: Exception) {
+            view.onUnknownAddress()
             tryResolveAgain()
         }
     }
 
     private fun tryResolveAgain() {
-        if (loadAddressAttempts < 3) {
+        if (loadAddressAttempts < 5) {
             resolveAddress()
             loadAddressAttempts += 1
         } else {
@@ -117,10 +128,12 @@ class MapsPresenter(
     }
 
     private companion object {
-        private val TAG = MapsPresenter.javaClass.simpleName
+        private val TAG = MapsPresenter::class.java.simpleName
 
         private const val LOCATION_REQUEST_CODE = 2142
         private const val RESET_ATTEMPTS_DELAY_MS = 1000L
+
+        private const val UNNAMED_ROAD = "Unnamed Road"
     }
 
 }

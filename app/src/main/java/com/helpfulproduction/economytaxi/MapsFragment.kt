@@ -31,6 +31,10 @@ class MapsFragment: Fragment(), MapsContract.View<MapsContract.Presenter> {
         addressView?.setGone()
     }
 
+    override fun onUnknownAddress() {
+        addressView?.setGone()
+    }
+
     override fun onAddressResolved(address: String) {
         addressView?.text = address
         addressView?.setVisible()

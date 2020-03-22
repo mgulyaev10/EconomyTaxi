@@ -1,9 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="colorPrimary">#008577</color>
-    <color name="colorPrimaryDark">#00574B</color>
-    <color name="colorAccent">#D81B60</color>
-    <color name="gray_zoom_btn_bg">#a0a1a3</color>
+    <color name="colorPrimary">#fcba03</color>
+    <color name="colorPrimaryDark">#e69500</color>
+    <color name="colorAccent">#f22400</color>
+    <color name="gray_zoom_btn_bg">#dbdbdb</color>
     <color name="street_address">#a6a6a6</color>
     <color name="black">#000000</color>
+    <color name="transparent">#00FFFFFF</color>
 </resources>

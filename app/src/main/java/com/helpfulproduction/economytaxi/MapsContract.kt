@@ -21,6 +21,7 @@ interface MapsContract {
     interface View<Presenter> {
         fun onCameraMoveStarted()
         fun onAddressResolved(address: String)
+        fun onUnknownAddress()
 
         fun activity(): Activity?
         fun fragment(): Fragment
