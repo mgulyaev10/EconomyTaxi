@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="colorPrimary">#008577</color>
+    <color name="colorPrimaryDark">#00574B</color>
+    <color name="colorAccent">#D81B60</color>
+    <color name="gray_zoom_btn_bg">#a0a1a3</color>
+    <color name="street_address">#a6a6a6</color>
+    <color name="black">#000000</color>
+</resources>

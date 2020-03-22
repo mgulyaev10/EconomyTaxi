@@ -1,0 +1,10 @@
+<resources>
+    <string name="app_name">Economy Taxi</string>
+    <string name="title_activity_maps">Economy Taxi</string>
+    
+    <!--  ACCESSIBILITY  -->
+    <string name="accessibilty_zoom_in">Приблизить</string>
+    <string name="accessibilty_zoom_out">Отдалить</string>
+    <string name="accessibility_my_location">Моё местоположение</string>
+    <!-- - - - - - - - - -->
+</resources>
