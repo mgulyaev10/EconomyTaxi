@@ -3,22 +3,8 @@ package com.helpfulproduction.economytaxi
 import android.content.Context
 
 object Preference {
-    private const val PERMISSION_PREF_KEY = "permissions_pref_key"
     private const val RECENTS_PREF_KEY = "recents_pref_key"
-
     private const val RECENTS_KEY = "recents_key"
-
-    fun isAlreadyRequestedPermission(context: Context, permission: String): Boolean {
-        return context.getSharedPreferences(PERMISSION_PREF_KEY, Context.MODE_PRIVATE)
-            .getBoolean(permission, false)
-    }
-
-    fun setRequestedPermission(context: Context, permission: String) {
-        context.getSharedPreferences(PERMISSION_PREF_KEY, Context.MODE_PRIVATE)
-            .edit()
-            .putBoolean(permission, true)
-            .apply()
-    }
 
     fun getRecentPlaces(context: Context): List<String> {
         return context.getSharedPreferences(RECENTS_PREF_KEY, Context.MODE_PRIVATE)

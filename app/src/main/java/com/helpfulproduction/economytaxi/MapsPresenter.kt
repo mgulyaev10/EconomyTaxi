@@ -3,8 +3,6 @@ package com.helpfulproduction.economytaxi
 import android.Manifest
 import android.content.pm.PackageManager
 import android.location.Geocoder
-import android.os.Handler
-import android.os.Looper
 import android.util.Log
 import com.google.android.gms.maps.*
 import java.util.*
@@ -14,8 +12,6 @@ class MapsPresenter(
 ): MapsContract.Presenter {
 
     private var map: GoogleMap? = null
-    private val handler = Handler(Looper.getMainLooper())
-    private var loadAddressAttempts = 0
 
     private val onMapReadyCallback =
         OnMapReadyCallback { preparedMap ->
@@ -62,7 +58,7 @@ class MapsPresenter(
         permissions: Array<out String>,
         grantResults: IntArray
     ) {
-        if (requestCode == LOCATION_REQUEST_CODE) {
+        if (requestCode == LOCATION_REQUEST_CODE && grantResults.isNotEmpty()) {
             if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                 setCurrentPosition()
             } else {
@@ -96,26 +92,11 @@ class MapsPresenter(
         }
     }
 
-    private fun tryResolveAgain() {
-        if (loadAddressAttempts < 5) {
-            resolveAddress()
-            loadAddressAttempts += 1
-        } else {
-            handler.postDelayed({
-                Log.d(TAG, "Reset attempts")
-                loadAddressAttempts = 0
-            }, RESET_ATTEMPTS_DELAY_MS)
-        }
-    }
-
     private fun setPosition() {
         if (PermissionHelper.checkPermission(Manifest.permission.ACCESS_FINE_LOCATION, view.activity())) {
             setCurrentPosition()
         } else {
-            val isRequested = PermissionHelper.requestIfFirstAttempt(view.fragment(), Manifest.permission.ACCESS_FINE_LOCATION, LOCATION_REQUEST_CODE)
-            if (!isRequested) {
-                setDefaultPosition()
-            }
+            PermissionHelper.requestPermission(view.fragment(), Manifest.permission.ACCESS_FINE_LOCATION, LOCATION_REQUEST_CODE)
         }
     }
 
@@ -133,8 +114,6 @@ class MapsPresenter(
         private val TAG = MapsPresenter::class.java.simpleName
 
         private const val LOCATION_REQUEST_CODE = 2142
-        private const val RESET_ATTEMPTS_DELAY_MS = 1000L
-
         private const val UNNAMED_ROAD = "Unnamed Road"
     }
 

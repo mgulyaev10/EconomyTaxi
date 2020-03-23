@@ -14,20 +14,7 @@ object PermissionHelper {
         return ActivityCompat.checkSelfPermission(context, permission) == PackageManager.PERMISSION_GRANTED
     }
 
-    fun requestIfFirstAttempt(fragment: Fragment, permission: String, requestCode: Int): Boolean {
-        val context = fragment.context ?: return false
-
-        if (!Preference.isAlreadyRequestedPermission(context, permission)) {
-            requestPermission(fragment, permission, requestCode)
-            return true
-        }
-        return false
-    }
-
     fun requestPermission(fragment: Fragment, permission: String, requestCode: Int) {
-        val context = fragment.context ?: return
-
         fragment.requestPermissions(arrayOf(permission), requestCode)
-        Preference.setRequestedPermission(context, permission)
     }
 }
