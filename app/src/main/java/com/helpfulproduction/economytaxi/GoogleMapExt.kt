@@ -3,25 +3,18 @@ package com.helpfulproduction.economytaxi
 import android.app.Activity
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
-
-fun GoogleMap?.zoomIn() {
-    this?.cameraPosition?.zoom?.let { currentZoom ->
-        animateCamera(CameraUpdateFactory.zoomTo(currentZoom + 1))
-    }
-}
-
-fun GoogleMap?.zoomOut() {
-    this?.cameraPosition?.zoom?.let { currentZoom ->
-        animateCamera(CameraUpdateFactory.zoomTo(currentZoom - 1))
-    }
-}
+import com.google.android.gms.maps.model.LatLng
 
 fun GoogleMap?.toMyLocation(activity: Activity?) {
-    val location = LocationHelper.getLocation(activity)
-    this?.moveCamera(CameraUpdateFactory.newLatLng(location))
+    val myLocation = LocationHelper.getLocation(activity)
+    toPosition(myLocation)
 }
 
 fun GoogleMap?.toDefaultLocation() {
-    val location = LocationHelper.getDefaultLocation()
+    val defaultLocation = LocationHelper.getDefaultLocation()
+    toPosition(defaultLocation)
+}
+
+fun GoogleMap?.toPosition(location: LatLng) {
     this?.moveCamera(CameraUpdateFactory.newLatLng(location))
 }

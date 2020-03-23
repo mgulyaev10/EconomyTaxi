@@ -1,5 +1,7 @@
 package com.helpfulproduction.economytaxi
 
+import android.app.Activity
+import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -7,31 +9,58 @@ import android.view.ViewGroup
 import android.view.animation.Animation
 import android.widget.ImageView
 import android.widget.TextView
+import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.google.android.gms.maps.*
+import com.google.android.gms.maps.MapView
 
 class MapsFragment: Fragment(), MapsContract.View<MapsContract.Presenter> {
+    private var presenter: MapsContract.Presenter? = null
 
-    private val presenter = MapsPresenter(this)
     private var mapView: MapView? = null
 
     private var recents: RecyclerView? = null
     private lateinit var addressView: TextView
     private var addressAnimation: Animation? = null
+    private lateinit var permissionTopExplanation: ViewGroup
 
     private lateinit var marker: ImageView
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-        val view = inflater.inflate(R.layout.maps_fragment, container, false)
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View? {
+        val view = inflater.inflate(R.layout.fragment_maps, container, false)
+        presenter = MapsPresenter(this)
+
         mapView = view.findViewById(R.id.map)
         mapView?.onCreate(savedInstanceState)
+        presenter?.onCreateMapView(mapView)
 
         initViews(view)
 
-        presenter.onCreateView(mapView)
         return view
+    }
+
+    override fun onResume() {
+        super.onResume()
+        mapView?.onResume()
+        presenter?.onResume()
+    }
+
+    override fun onViewStateRestored(savedInstanceState: Bundle?) {
+        super.onViewStateRestored(savedInstanceState)
+        presenter?.onRestoreInstanceState(savedInstanceState)
+    }
+
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<out String>,
+        grantResults: IntArray
+    ) {
+        presenter?.onRequestPermissionsResult(requestCode, permissions, grantResults)
     }
 
     override fun onCameraMoveStarted() {
@@ -49,20 +78,21 @@ class MapsFragment: Fragment(), MapsContract.View<MapsContract.Presenter> {
         showAddressViewAnimated()
     }
 
-    override fun fragment() = this
-    override fun activity() = activity
-
-    override fun onRequestPermissionsResult(
-        requestCode: Int,
-        permissions: Array<out String>,
-        grantResults: IntArray
-    ) {
-        presenter.onRequestPermissionsResult(requestCode, permissions, grantResults)
+    override fun showPermissionExplanation() {
+        permissionTopExplanation.setVisible()
     }
 
-    override fun onResume() {
-        super.onResume()
-        mapView?.onResume()
+    override fun hidePermissionExplanation() {
+        permissionTopExplanation.setGone()
+    }
+
+    override fun highlightPermissionsWindow() {
+        context?.let { ctx ->
+            permissionTopExplanation.background = ColorDrawable(ContextCompat.getColor(ctx, R.color.gray_zoom_btn_bg))
+            permissionTopExplanation.postDelayed({
+                permissionTopExplanation.background = ContextCompat.getDrawable(ctx, R.drawable.bg_ripple)
+            }, 300L)
+        }
     }
 
     override fun onPause() {
@@ -70,9 +100,9 @@ class MapsFragment: Fragment(), MapsContract.View<MapsContract.Presenter> {
         mapView?.onPause()
     }
 
-    override fun onSaveInstanceState(p0: Bundle) {
-        super.onSaveInstanceState(p0)
-        mapView?.onSaveInstanceState(p0)
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        presenter?.onSaveInstanceState(outState)
     }
 
     override fun onDestroy() {
@@ -80,43 +110,45 @@ class MapsFragment: Fragment(), MapsContract.View<MapsContract.Presenter> {
         mapView?.onDestroy()
     }
 
+    override fun onDestroyView() {
+        super.onDestroyView()
+        presenter = null
+    }
+
     override fun onLowMemory() {
         super.onLowMemory()
         mapView?.onLowMemory()
     }
 
-    private fun initViews(view: View?) {
-        view?.let {
-            view.findViewById<ImageView>(R.id.zoom_in)?.apply {
-                setOnClickListener {
-                    presenter.onZoomInClick()
-                }
-            }
-
-            view.findViewById<ImageView>(R.id.zoom_out)?.apply {
-                setOnClickListener {
-                    presenter.onZoomOutClick()
-                }
-            }
-
-            view.findViewById<ImageView>(R.id.my_location)?.apply {
-                setOnClickListener {
-                    presenter.onMyLocationClick()
-                }
-            }
-
-            addressView = view.findViewById(R.id.address)
-            marker = view.findViewById(R.id.marker)
-
-            recents = view.findViewById<RecyclerView>(R.id.recents)?.apply {
-                layoutManager = LinearLayoutManager(context, LinearLayoutManager.HORIZONTAL, false)
-                adapter = RecentPlacesAdapter(context)
-            }
-        }
-    }
+    override fun activity(): Activity? = activity
+    override fun fragment(): Fragment = this
 
     private fun showAddressViewAnimated() {
         addressAnimation = AnimationHelper.showOneViewFromAnotherVertically(addressView, marker, -100F, 300L)
     }
 
+    private fun initViews(view: View) {
+        view.findViewById<ImageView>(R.id.my_location)?.apply {
+            setOnClickListener {
+                presenter?.onMyLocationClick()
+            }
+        }
+
+        addressView = view.findViewById(R.id.address)
+        marker = view.findViewById(R.id.marker)
+        permissionTopExplanation = view.findViewById<ViewGroup>(R.id.permission_container).apply {
+            setOnClickListener {
+                presenter?.onPermissionWindowClick()
+            }
+        }
+
+        recents = view.findViewById<RecyclerView>(R.id.recents)?.apply {
+            layoutManager = LinearLayoutManager(view.context, LinearLayoutManager.HORIZONTAL, false)
+            adapter = RecentPlacesAdapter(view.context)
+        }
+    }
+
+    companion object {
+        val TAG = MapsFragment::class.java.simpleName
+    }
 }

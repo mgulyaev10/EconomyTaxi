@@ -3,10 +3,11 @@
     <string name="title_activity_maps">Economy Taxi</string>
 
     <string name="where">Куда?</string>
+    <string name="permission_explanation_title">Разрешите доступ к геопозиции</string>
+    <string name="permission_explanation_subtitle">Не получается найти Вас</string>
 
     <!--  ACCESSIBILITY  -->
-    <string name="accessibilty_zoom_in">Приблизить</string>
-    <string name="accessibilty_zoom_out">Отдалить</string>
     <string name="accessibility_my_location">Моё местоположение</string>
+    <string name="accessibility_enter_destination">Ввести пункт назначения</string>
     <!-- - - - - - - - - -->
 </resources>

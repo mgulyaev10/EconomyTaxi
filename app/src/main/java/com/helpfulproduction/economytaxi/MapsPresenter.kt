@@ -3,8 +3,9 @@ package com.helpfulproduction.economytaxi
 import android.Manifest
 import android.content.pm.PackageManager
 import android.location.Geocoder
-import android.util.Log
+import android.os.Bundle
 import com.google.android.gms.maps.*
+import com.google.android.gms.maps.model.LatLng
 import java.util.*
 
 class MapsPresenter(
@@ -12,6 +13,7 @@ class MapsPresenter(
 ): MapsContract.Presenter {
 
     private var map: GoogleMap? = null
+    private var currentLatLng: LatLng? = null
 
     private val onMapReadyCallback =
         OnMapReadyCallback { preparedMap ->
@@ -22,12 +24,14 @@ class MapsPresenter(
                 }
                 setOnCameraIdleListener {
                     resolveAddress()
+                    saveCurrentLatLng()
                 }
             }
             setPosition()
+            setMyLocationEnabledOrNot()
         }
 
-    override fun onCreateView(mapView: MapView?) {
+    override fun onCreateMapView(mapView: MapView?) {
         try {
             MapsInitializer.initialize(view.activity())
         } catch (e: Exception) {
@@ -35,21 +39,41 @@ class MapsPresenter(
         }
 
         mapView?.getMapAsync(onMapReadyCallback)
+        PermissionHelper.requestPermission(view.fragment(), Manifest.permission.ACCESS_FINE_LOCATION, LOCATION_REQUEST_CODE)
     }
 
-    override fun onZoomInClick() {
-        map?.zoomIn()
+    override fun onResume() {
+        if (!PermissionHelper.checkPermission(Manifest.permission.ACCESS_FINE_LOCATION, view.activity())) {
+            view.showPermissionExplanation()
+        } else {
+            view.hidePermissionExplanation()
+        }
+        setPosition()
     }
 
-    override fun onZoomOutClick() {
-        map?.zoomOut()
+    override fun onSaveInstanceState(bundle: Bundle) {
+        map?.let { map ->
+            val target = map.cameraPosition.target
+            bundle.putDouble(KEY_LATITUDE, target.latitude)
+            bundle.putDouble(KEY_LONGITUDE, target.longitude)
+        }
+    }
+
+    override fun onRestoreInstanceState(bundle: Bundle?) {
+        bundle?.let { savedInstanceState ->
+            val lat = bundle.getDouble(KEY_LATITUDE)
+            val lng = bundle.getDouble(KEY_LONGITUDE)
+            if (lat != 0.0 && lng != 0.0) {
+                currentLatLng = LatLng(lat, lng)
+            }
+        }
     }
 
     override fun onMyLocationClick() {
         if (PermissionHelper.checkPermission(Manifest.permission.ACCESS_FINE_LOCATION, view.activity())) {
             setCurrentPosition()
         } else {
-            PermissionHelper.requestPermission(view.fragment(), Manifest.permission.ACCESS_FINE_LOCATION, LOCATION_REQUEST_CODE)
+            view.highlightPermissionsWindow()
         }
     }
 
@@ -58,13 +82,25 @@ class MapsPresenter(
         permissions: Array<out String>,
         grantResults: IntArray
     ) {
-        if (requestCode == LOCATION_REQUEST_CODE && grantResults.isNotEmpty()) {
+        if (grantResults.isEmpty()) {
+            return
+        }
+        if (requestCode == LOCATION_REQUEST_CODE) {
             if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                 setCurrentPosition()
+                view.hidePermissionExplanation()
             } else {
+                permissions.forEach {
+                    PermissionHelper.rememberDeniedPermission(view.activity(), it)
+                }
                 setDefaultPosition()
+                view.showPermissionExplanation()
             }
         }
+    }
+
+    override fun onPermissionWindowClick() {
+        PermissionHelper.tryRequestPermission(view.fragment(), Manifest.permission.ACCESS_FINE_LOCATION, LOCATION_REQUEST_CODE)
     }
 
     private fun resolveAddress() {
@@ -93,21 +129,35 @@ class MapsPresenter(
     }
 
     private fun setPosition() {
+        currentLatLng?.let { latLng ->
+            setPosition(latLng)
+            return
+        }
         if (PermissionHelper.checkPermission(Manifest.permission.ACCESS_FINE_LOCATION, view.activity())) {
             setCurrentPosition()
         } else {
-            PermissionHelper.requestPermission(view.fragment(), Manifest.permission.ACCESS_FINE_LOCATION, LOCATION_REQUEST_CODE)
+            setDefaultPosition()
         }
     }
 
     private fun setCurrentPosition() {
-        map?.isMyLocationEnabled = true
         map?.toMyLocation(view.activity())
     }
 
     private fun setDefaultPosition() {
-        map?.isMyLocationEnabled = false
         map?.toDefaultLocation()
+    }
+
+    private fun setMyLocationEnabledOrNot() {
+        map?.isMyLocationEnabled = PermissionHelper.checkPermission(Manifest.permission.ACCESS_FINE_LOCATION, view.activity())
+    }
+
+    private fun setPosition(latLng: LatLng) {
+        map?.toPosition(latLng)
+    }
+
+    private fun saveCurrentLatLng() {
+        currentLatLng = map?.cameraPosition?.target
     }
 
     private companion object {
@@ -115,6 +165,9 @@ class MapsPresenter(
 
         private const val LOCATION_REQUEST_CODE = 2142
         private const val UNNAMED_ROAD = "Unnamed Road"
+
+        private const val KEY_LATITUDE = "latitude_key"
+        private const val KEY_LONGITUDE = "longitude_key"
     }
 
 }
